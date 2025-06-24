@@ -1,8 +1,10 @@
 import React from 'react';
 
 const ProductTable = ({ products, onRowClick }) => {
+
+  
   return (
-    <table className="product-table">
+      <table className="product-table">
       <thead>
         <tr>
           <th>Title</th>
@@ -13,6 +15,7 @@ const ProductTable = ({ products, onRowClick }) => {
         </tr>
       </thead>
       <tbody>
+      {/* {filterData.map(client) => (<tr>)} */}
         {products.map((prod) => (
           <tr key={prod.id} onClick={() => onRowClick(prod)}>
             <td>{prod.title}</td>
@@ -24,6 +27,7 @@ const ProductTable = ({ products, onRowClick }) => {
         ))}
       </tbody>
     </table>
+    
   );
 };
 

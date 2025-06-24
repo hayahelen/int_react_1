@@ -1,7 +1,31 @@
-import React from "react";
+import React, { useState } from "react";
+import { useProductDetails } from '../services/useProductDetails';
 
-const ProductDetailsPopup = ({ product, onClose }) => {
-  if (!product) return null;
+import EditSection from "./EditSection";
+
+const ProductDetailsPopup = ({ productId, onClose, onUpdated, onDeleted }) => {
+  const { product, loading, error, deleteProduct } = useProductDetails(productId);
+  const [showEdit, setShowEdit] = useState(false);
+
+  if (loading) return <div className="popup-backdrop">Loading…</div>;
+
+  if (error || !product) return null;
+
+  const handleDelete = async () => {
+    try {
+      if (window.confirm("Are you sure you want to delete this product?")) {
+      await deleteProduct();
+      onDeleted();
+      onClose();
+    }} catch (err) {
+      console.error("Delete failed:", err);
+      alert("Failed to delete product.");
+
+    }
+  }
+    
+
+
 
 
   const renderArray = (arr) => (arr ? arr.join(", ") : "N/A");
@@ -58,11 +82,11 @@ const ProductDetailsPopup = ({ product, onClose }) => {
           <section>
             <h3>Images</h3>
             <div style={{ display: "flex", gap: 10, overflowX: "auto" }}>
-              {product.images.map((url, idx) => (
+              {product.images.map((url, id) => (
                 <img
-                  key={idx}
+                  key={id}
                   src={url}
-                  alt={`${product.title} ${idx + 1}`}
+                  alt={`${product.title} ${id + 1}`}
                   style={{ maxHeight: "100px", borderRadius: "6px" }}
                 />
               ))}
@@ -136,8 +160,8 @@ const ProductDetailsPopup = ({ product, onClose }) => {
                   <tr key={idx}>
                     <td style={{ border: '1px solid #ccc', padding: '8px' }}>{rev.rating ?? 'N/A'}</td>
                     <td style={{ border: '1px solid #ccc', padding: '8px' }}>{rev.comment || 'No comment'}</td>
-                    <td style={{ border: '1px solid #ccc', padding: '8px' }}>{rev.reviewerName || 'Anonymous'}<br />({rev.reviewerEmail || 'No email'})</td>
-                    <td style={{ border: '1px solid #ccc', padding: '8px' }}>{rev.date || 'No date'}</td>
+                    <td style={{ border: '1px solid #ccc', padding: '8px' }}>{rev.reviewer_name || 'Anonymous'}<br />({rev.reviewer_email || 'No email'})</td>
+                    <td style={{ border: '1px solid #ccc', padding: '8px' }}>{rev.review_date || 'No date'}</td>
                   </tr>
                 ))}
               </tbody>
@@ -181,9 +205,31 @@ const ProductDetailsPopup = ({ product, onClose }) => {
             })}
           </ul>
         </section>
+
+        
+       
         
 
-        <button onClick={onClose}>Close</button>
+
+        <div className="action-buttons">
+          <button className="edit-btn" onClick={() => setShowEdit(true)}>Edit</button>
+          <button className="delete-btn" onClick={handleDelete}>Delete</button>
+          <button className="close-btn-secondary" onClick={onClose}>Close</button>
+        </div>
+
+        {showEdit && (
+          <EditSection
+            product={product}
+            onClose={() => setShowEdit(false)}
+            onUpdated={(updatedProduct) => {
+              onUpdated(updatedProduct); 
+              setShowEdit(false);         
+            }}
+          />
+        )}
+
+
+        
       </div>
     </div>
   );

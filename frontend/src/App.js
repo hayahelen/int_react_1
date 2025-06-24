@@ -3,62 +3,75 @@ import './App.css';
 import ProductTable from './components/ProductTable';
 import SearchBar from './components/SearchBar';
 import ProductDetailsPopup from './components/ProductDetailsPopup';
+import AddSection from './components/AddSection';
+import { useProducts } from './services/useProducts';
 
-const API_BASE = 'http://localhost:3000/api';
 
 const App = () => {
-  const [products, setProducts] = useState([]);
   const [query, setQuery] = useState('');
-  const [selectedProduct, setSelectedProduct] = useState(null);
+  // const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedProductId, setId]  = useState(null);
 
-  // Fetch list (with search)
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const endpoint = query
-          ? `${API_BASE}/products/search?q=${encodeURIComponent(query)}`
-          : `${API_BASE}/products`;
-        const res = await fetch(endpoint);
-        const data = await res.json();
-            console.log('Fetching:', endpoint);
-            console.log('RESSSS:', data);
+  const [showAdd, setShowAdd] = useState(false);
 
-        setProducts(data);
-      } catch (err) {
-        console.error('Error fetching products list:', err);
-      }
+  const { products, loading, error, refetch } = useProducts(query);
+
+
+
+  //CREATE
+
+  const handleCreated = async (newProduct) => {
+      setShowAdd(false);
+      setId(null);
+      await refetch();
+
+    }
+
+    //DELETE
+
+  const handleDeleted = async (deletedId) => {
+      setId(null)
+      await refetch();
+
     };
 
-    fetchProducts();
-  }, [query]);
-  console.log("qqqqqq",query)
+    //UPDATE
 
-  // Handler to load full details for one product
-  const handleRowClick = async (product) => {
-    try {
-      const res = await fetch(`${API_BASE}/products/${product.id}`);
-      const fullData = await res.json();
-      setSelectedProduct(fullData);
-    } catch (err) {
-      console.error('Error fetching product details:', err);
-    }
-  };
+  const handleUpdated = async (updatedProduct) => {
+    setId(null);
+    await refetch()
+  }
+
+    
+    
 
   return (
     <div className="App">
-      <h1>🛒 Product Explorer</h1>
+      <h1>Product Explorer</h1>
 
       <SearchBar query={query} onSearch={setQuery} />
+       <button onClick={() => setShowAdd(true)}>+ Add Product</button>
+          {showAdd && <AddSection
+          onCreated={handleCreated}
+          onClose={() => setShowAdd(false)}
+        />}
+
+      {loading && "Loading products..."}
+      {error && <p>Error loading products</p>}
 
       <ProductTable
         products={products}
-        onRowClick={handleRowClick}
+        onRowClick={(prod) => setId(prod.id)}
       />
 
-      {selectedProduct && (
+      {selectedProductId && (
         <ProductDetailsPopup
-          product={selectedProduct}
-          onClose={() => setSelectedProduct(null)}
+          productId={selectedProductId}
+          onClose={() => setId(null)}
+          onDeleted={handleDeleted}
+          onUpdated={handleUpdated}
+          
+
         />
       )}
     </div>
@@ -66,3 +79,26 @@ const App = () => {
 };
 
 export default App;
+
+
+
+//make sure all the api's work (DONE)
+//REFACTOR CODE => FETCHPRODUCTS FUNCTION (DONE)
+//REFETCH ALL THE PRODUCTS AGAIN (ONHANDLECREATED ON HANDLEDELETED) (DONE)
+//IMAGE UPLOAD : MULTIPART FORM DATA
+//CREATE/UPDATE TO WORK ON INNERTABLES (done)
+//create frontend for the edit
+
+
+
+
+
+
+
+
+//multer further research
+//section above edit and add images to render them
+//bug fixes
+
+
+
